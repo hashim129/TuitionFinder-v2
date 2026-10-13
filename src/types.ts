@@ -9,6 +9,7 @@ export interface Tutor {
   rating: number;
   totalStudents: number;
   hourlyRatePKR: number;
+  monthlyRatePKR: number;       // Monthly rate for display
   availability: string[];
   verified: boolean;
   cnicVerified: boolean;
@@ -125,19 +126,19 @@ export interface Booking {
   canRebook: boolean;
 }
 
-// ---- Pricing (15% platform fee + 16% GST as operating fee & taxes) ----
+// ---- Pricing (15% platform fee + 8% operating fee) ----
 
 export interface PricingConfig {
   platformCommissionRate: number;  // 0.15
-  gstRate: number;                 // 0.16 - platform revenue, shown as "Operating Fee & Taxes"
+  operatingFeeRate: number;        // 0.08 - paid by parent/student
   currency: string;
 }
 
 export interface PricingBreakdown {
   baseTuition: number;
   platformFee: number;          // 15% commission
-  operatingFeeAndTaxes: number; // 16% GST, shown to customer
-  totalParentPays: number;      // base + operatingFeeAndTaxes
+  operatingFee: number;         // 8% operating fee, paid by parent
+  totalParentPays: number;      // base + operatingFee
   tutorNet: number;             // base - platformFee
   config: PricingConfig;
 }
@@ -184,6 +185,8 @@ export interface TuitionNeed {
   status: 'open' | 'in_progress' | 'filled' | 'cancelled';
   createdAt: string;
   responses: number;
+  respondedByTutorId?: string;
+  respondedBookingId?: string;
 }
 
 // ---- Signup ----

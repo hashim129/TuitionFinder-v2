@@ -29,6 +29,8 @@ interface AppState {
   rejectBooking: (bookingId: string) => void;
   cancelBooking: (bookingId: string) => void;
   tutorConfirmBooking: (bookingId: string) => void;
+  tutorRespondToNeed: (needId: string) => { ok: boolean; error?: string };
+  tutorConfirmNeedBooking: (needId: string) => void;
   tuitionNeeds: TuitionNeed[];
   postTuitionNeed: (need: Omit<TuitionNeed, 'id' | 'createdAt' | 'status' | 'responses'>) => void;
   toggleTuitionNeedStatus: (needId: string) => void;
@@ -41,6 +43,8 @@ interface AppState {
   completeSignup: (data: SignupData) => void;
   otpVerified: boolean;
   verifyOtp: () => void;
+  userSignedUp: boolean;
+  addUserTutor: (name: string, subjects: string[], city: string, area: string, hourlyRatePKR: number) => void;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -60,16 +64,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [violations, setViolations] = useState<ViolationReport[]>([]);
   const [tuitionNeeds, setTuitionNeeds] = useState<TuitionNeed[]>(SAMPLE_TUITION_NEEDS);
   const [signupOpen, setSignupOpen] = useState(false);
+  const [userSignedUp, setUserSignedUp] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
   const [cnicVerified, setCnicVerified] = useState(false);
   const [cnicNumber, setCnicNumber] = useState('');
   const [userRole, setUserRole] = useState<'parent' | 'student' | 'tutor'>('parent');
   const [userGrade, setUserGrade] = useState('A-Levels');
   const [userSubjects, setUserSubjects] = useState<string[]>([]);
+  const [userTutors, setUserTutors] = useState<Tutor[]>([]);
+  const [userName, setUserName] = useState('Tariq Mahmood');
+  const [userPhone, setUserPhone] = useState('03001234567');
+  const [userEmail, setUserEmail] = useState('');
+  const [userCity, setUserCity] = useState('Lahore');
+  const [userArea, setUserArea] = useState('DHA');
 
   const currentUser = {
-    id: 'user', name: 'Tariq Mahmood', avatar: 'TM', role: userRole,
-    city: 'Lahore', area: 'DHA', phone: '03001234567',
+    id: 'user', name: userName, avatar: userName.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase(), role: userRole,
+    city: userCity, area: userArea, phone: userPhone,
     cnicVerified, cnicNumber, otpVerified,
     gradeLevel: userGrade, subjects: userSubjects,
   };
@@ -147,6 +158,97 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   };
 
+  const tutorRespondToNeed = (needId: string) => {
+    const need = tuitionNeeds.find(n => n.id === needId);
+    if (!need || need.studentId === currentUser.id) {
+      return { ok: false, error: 'You cannot respond to your own tuition need.' };
+    }
+    if (currentUser.role !== 'tutor') {
+      return { ok: false, error: 'Only tutors can respond to tuition needs.' };
+    }
+    if (need.responses >= 1 && need.respondedByTutorId) {
+      return { ok: false, error: 'This need already has an accepted tutor response.' };
+    }
+
+    const subject = need.subjects.find(s => currentUser.subjects.includes(s)) || need.subjects[0] || 'General';
+    const schedule = generateSchedule({
+      tutorId: currentUser.id,
+      subject,
+      start: new Date().toISOString().split('T')[0],
+      timezone: 'Asia/Karachi',
+      weekdays: need.preferredWeekdays,
+      dailyStart: '18:00',
+      durationMinutes: need.durationMinutes,
+      sessionsPerCycle: need.sessionsPerCycle,
+      baseTuitionPKR: need.budgetPKR,
+    });
+    if (!schedule.ok) {
+      return { ok: false, error: schedule.conflict || 'Could not create booking schedule.' };
+    }
+
+    const conflicts = detectConflicts(schedule.sessions, bookings, currentUser.id);
+    if (conflicts.length > 0) {
+      return { ok: false, error: conflicts[0] };
+    }
+
+    const pricing = calculatePricing(need.budgetPKR);
+    const bookingId = `bk_${Date.now()}`;
+    const booking: Booking = {
+      id: bookingId,
+      tutorId: currentUser.id,
+      tutorName: currentUser.name,
+      studentName: need.studentName,
+      subject,
+      start: new Date().toISOString().split('T')[0],
+      timezone: 'Asia/Karachi',
+      weekdays: need.preferredWeekdays,
+      dailyStart: '18:00',
+      durationMinutes: need.durationMinutes,
+      sessionsPerCycle: need.sessionsPerCycle,
+      cycleEnd: schedule.cycleEnd,
+      schedule: schedule.sessions,
+      state: 'awaiting_tutor_confirmation',
+      pricing,
+      createdAt: new Date().toISOString(),
+      tutorConfirmed: false,
+      studentConfirmed: true,
+      canRebook: true,
+    };
+
+    setBookings(prev => [...prev, booking]);
+    setTuitionNeeds(prev => prev.map(n => {
+      if (n.id !== needId) return n;
+      return {
+        ...n,
+        status: 'in_progress' as const,
+        responses: Math.min(n.responses + 1, 1),
+        respondedByTutorId: currentUser.id,
+        respondedBookingId: bookingId,
+      };
+    }));
+
+    return { ok: true };
+  };
+
+  const tutorConfirmNeedBooking = (needId: string) => {
+    const need = tuitionNeeds.find(n => n.id === needId);
+    if (!need || need.studentId === currentUser.id) return;
+    if (currentUser.role !== 'tutor') return;
+    if (!need.respondedBookingId) return;
+
+    const bookingId = need.respondedBookingId;
+    setBookings(prev => prev.map(b => b.id === bookingId ? {
+      ...b,
+      state: 'confirmed' as const,
+      tutorConfirmed: true,
+      confirmedAt: new Date().toISOString(),
+    } : b));
+    setTuitionNeeds(prev => prev.map(n => n.id === needId ? {
+      ...n,
+      status: 'filled' as const,
+    } : n));
+  };
+
   // Premium: PKR 2000 / 2 months / 6 additional subjects (3+6=9 total)
   const [premiumActive, setPremiumActive] = useState(false);
   const [premiumExpiry, setPremiumExpiry] = useState<string | null>(null);
@@ -171,12 +273,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setViolations(prev => [report, ...prev]);
   };
 
+  const addUserTutor = (name: string, subjects: string[], city: string, area: string, monthlyRatePKR: number) => {
+    const newTutor: Tutor = {
+      id: `tutor_${Date.now()}`,
+      name, avatar: name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase(),
+      subjects, city, area,
+      experienceYears: 1, rating: 0, totalStudents: 0,
+      hourlyRatePKR: Math.round(monthlyRatePKR / 8), monthlyRatePKR,
+      availability: ['Mon 4-6 PM', 'Wed 4-6 PM', 'Sat 10 AM-1 PM'],
+      verified: true, cnicVerified: true, cnicNumber: '',
+      description: 'New tutor on TuitionFinder. Quality teaching guaranteed.',
+      qualifications: 'Qualified professional'
+    };
+    setUserTutors(prev => [...prev, newTutor]);
+  };
+
   const completeSignup = (data: SignupData) => {
     setUserRole(data.role);
+    setUserName(data.name);
+    setUserPhone(data.phone);
+    setUserEmail(data.email);
+    setUserCity(data.city);
+    setUserArea(data.area);
     setCnicVerified(data.cnicVerified);
     setCnicNumber(data.cnicNumber);
     if (data.gradeLevel) setUserGrade(data.gradeLevel);
     if (data.subjects && data.subjects.length > 0) setUserSubjects(data.subjects);
+    setUserSignedUp(true);
     setSignupOpen(false);
   };
   const verifyOtp = () => { setOtpVerified(true); };
@@ -184,16 +307,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
     <AppContext.Provider value={{
       activeTab, setActiveTab, currentUser,
-      tutors: TUTORS, students: STUDENTS,
+      tutors: [...TUTORS, ...userTutors], students: STUDENTS,
       sessions, addMessage, sendMessage,
       currentOffer, sendOffer, acceptAndPay,
       contactUnmasked, sessionsCreated, createSession,
       bookings, submitBooking, confirmBooking, rejectBooking, cancelBooking, tutorConfirmBooking,
+      tutorRespondToNeed, tutorConfirmNeedBooking,
       tuitionNeeds, postTuitionNeed, toggleTuitionNeedStatus,
       premium, addPremiumSubject,
       violations, submitViolation,
       signupOpen, setSignupOpen, completeSignup,
       otpVerified, verifyOtp,
+      userSignedUp, addUserTutor,
     }}>
       {children}
     </AppContext.Provider>

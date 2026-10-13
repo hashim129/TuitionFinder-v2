@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, Wallet, BookOpen, CheckCircle, ArrowRight, Settings, Bell, HelpCircle, LogOut, Fingerprint, Smartphone, Lock, Megaphone, Calendar, CreditCard, AlertTriangle, X, CheckCircle2, Ban, AlertOctagon } from 'lucide-react';
+import { Shield, Wallet, BookOpen, CheckCircle, ArrowRight, Settings, Bell, HelpCircle, LogOut, Fingerprint, Smartphone, Lock, Megaphone, Calendar, CreditCard, AlertTriangle, X, CheckCircle2, Ban, AlertOctagon, Clock, Phone, Mail, MessageCircle, FileText } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { calculatePricing } from '../services/pricing';
 import { SUBJECTS } from '../data/mockData';
@@ -12,10 +12,22 @@ export const ProfileView: React.FC = () => {
 
   const [showPremium, setShowPremium] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const totalEscrow = sessions.reduce((s, sess) => s + sess.escrowBalance, 0);
   const totalTutorPayout = sessions.reduce((s, sess) => s + sess.tutorPayout, 0);
   const totalPlatformFee = sessions.reduce((s, sess) => s + sess.platformFee, 0);
+
+  // Notifications data
+  const notifications = [
+    { id: 1, type: 'booking', title: 'Booking Confirmed', message: 'Engr. Ahmad Raza confirmed your Physics booking for Monday.', time: '2h ago', read: false },
+    { id: 2, type: 'payment', title: 'Payment Processed', message: 'PKR 23,200 held in escrow for your Physics sessions.', time: '5h ago', read: false },
+    { id: 3, type: 'session', title: 'Session Reminder', message: 'Your Physics session with Engr. Ahmad Raza is tomorrow at 6:00 PM.', time: '1d ago', read: true },
+    { id: 4, type: 'tutor', title: 'New Tutor Available', message: 'Dr. Fatima Zahra (Mathematics, Calculus) is now available in your area.', time: '2d ago', read: true },
+    { id: 5, type: 'system', title: 'Account Verified', message: 'Your CNIC verification has been completed successfully.', time: '3d ago', read: true },
+  ];
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   // Masked CNIC - show only last 4 digits
   const maskedCnic = currentUser.cnicNumber ? currentUser.cnicNumber.replace(/^(\d{3}).*(\d{4})$/, '$1****-$2') : '35202-****-**7';
@@ -222,10 +234,11 @@ export const ProfileView: React.FC = () => {
             </div>
             <ArrowRight size={16} className="text-slate-400" />
           </button>
-          <button className="w-full flex items-center justify-between p-4 hover:bg-slate-50">
+          <button onClick={() => setShowNotifications(true)} className="w-full flex items-center justify-between p-4 hover:bg-slate-50">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center"><Bell size={16} /></div>
               <span className="text-sm font-medium text-slate-900">Notifications</span>
+              {unreadCount > 0 && <span className="text-[9px] font-bold text-white bg-red-500 px-1.5 py-0.5 rounded-full">{unreadCount}</span>}
             </div>
             <ArrowRight size={16} className="text-slate-400" />
           </button>
@@ -239,28 +252,94 @@ export const ProfileView: React.FC = () => {
         </div>
       </div>
 
-      {/* Payment Security */}
-      <div className="bg-slate-900 text-white rounded-2xl p-4">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center shrink-0"><Shield size={20} /></div>
-          <div>
-            <h3 className="font-bold text-sm">Payment Security Guarantee</h3>
-            <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
-              All payments are held in platform escrow. 16% GST is split 50/50 between tutor and parent.
-              15% platform commission is deducted from base tuition. Funds released after full cycle completion and QR attendance scans.
-            </p>
-            <div className="flex items-center gap-1.5 mt-2">
-              <CheckCircle size={14} className="text-emerald-400" />
-              <span className="text-[11px] text-emerald-300">JazzCash · EasyPaisa · Raast · Bank Transfer</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <button className="w-full flex items-center justify-center gap-2 p-3 bg-red-50 border border-red-200 text-red-700 rounded-2xl hover:bg-red-100 transition-colors">
         <LogOut size={16} />
         <span className="text-sm font-medium">Sign Out</span>
       </button>
+
+      {/* Notifications Modal */}
+      {showNotifications && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
+            <div className="px-5 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <Bell size={16} />
+                <span className="font-bold text-sm">Notifications</span>
+              </div>
+              <button onClick={() => setShowNotifications(false)}><X size={18} /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {notifications.map(n => (
+                <div key={n.id} className={'p-4 border-b border-slate-100 ' + (n.read ? '' : 'bg-emerald-50/50')}>
+                  <div className="flex items-start gap-3">
+                    <div className={'w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ' + (n.read ? 'bg-slate-100 text-slate-500' : 'bg-emerald-100 text-emerald-600')}>
+                      {n.type === 'booking' ? <Calendar size={14} /> :
+                       n.type === 'payment' ? <CreditCard size={14} /> :
+                       n.type === 'session' ? <Clock size={14} /> :
+                       n.type === 'tutor' ? <Shield size={14} /> : <CheckCircle size={14} />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-900">{n.title}</span>
+                        <span className="text-[9px] text-slate-400">{n.time}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 mt-0.5">{n.message}</p>
+                    </div>
+                    {!n.read && <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 mt-1" />}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Help & Support Modal */}
+      {showHelp && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
+            <div className="px-5 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <HelpCircle size={16} />
+                <span className="font-bold text-sm">Help & Support</span>
+              </div>
+              <button onClick={() => setShowHelp(false)}><X size={18} /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              <button onClick={() => { setShowHelp(false); setActiveTab('rules'); }}
+                className="w-full p-4 bg-white border border-slate-200 rounded-xl hover:border-emerald-300 hover:bg-emerald-50 transition-colors text-left flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0"><FileText size={16} /></div>
+                <div className="flex-1">
+                  <span className="text-xs font-bold text-slate-900 block">Platform Rules & Policies</span>
+                  <span className="text-[10px] text-slate-500">Terms of Service, privacy policy, refund policy</span>
+                </div>
+                <ArrowRight size={14} className="text-slate-400" />
+              </button>
+
+              <div className="bg-slate-50 rounded-xl p-4 space-y-3">
+                <span className="text-xs font-bold text-slate-700 block">Contact Support</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0"><Phone size={14} /></div>
+                  <div><span className="text-xs font-bold block">Phone</span><span className="text-[10px] text-slate-500">0300-1234567 (9AM-9PM)</span></div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0"><Mail size={14} /></div>
+                  <div><span className="text-xs font-bold block">Email</span><span className="text-[10px] text-slate-500">support@tuitionfinder.pk</span></div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center shrink-0"><MessageCircle size={14} /></div>
+                  <div><span className="text-xs font-bold block">WhatsApp</span><span className="text-[10px] text-slate-500">0321-1234567</span></div>
+                </div>
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
+                <AlertTriangle size={14} className="text-amber-600 shrink-0 mt-0.5" />
+                <p className="text-[11px] text-amber-800">Response time: 24-48 hours. For urgent payment issues, use the priority queue.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

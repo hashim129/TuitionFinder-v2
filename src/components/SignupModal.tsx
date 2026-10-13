@@ -8,7 +8,7 @@ const AREAS = ['DHA', 'Gulberg', 'Model Town', 'Johar Town', 'Wapda Town', 'Bahr
 const GRADE_LEVELS = ['Matric (8th/9th/10th)', 'Intermediate (FSc/FA)', 'A-Levels', 'BSc/BS', 'MSc/MS', 'Graduate', 'Professional (LLB/CAS)', 'Other'];
 
 export const SignupModal: React.FC = () => {
-  const { signupOpen, setSignupOpen, completeSignup, otpVerified, verifyOtp } = useApp();
+  const { signupOpen, setSignupOpen, completeSignup, otpVerified, verifyOtp, addUserTutor } = useApp();
   const [step, setStep] = useState(1);
   const [role, setRole] = useState<'parent' | 'student' | 'tutor' | null>(null);
   const [name, setName] = useState('');
@@ -23,13 +23,18 @@ export const SignupModal: React.FC = () => {
   const [otpInput, setOtpInput] = useState('');
   const [subjects, setSubjects] = useState<string[]>([]);
   const [gradeLevel, setGradeLevel] = useState(GRADE_LEVELS[1]);
-  const [hourlyRate, setHourlyRate] = useState(2000);
+  const [monthlyRate, setMonthlyRate] = useState(20000);
   const [cninMasked, setCninMasked] = useState('');
 
   if (!signupOpen) return null;
 
   const toggleSubject = (s: string) => {
-    setSubjects(prev => prev.includes(s) ? prev.filter(x => x !== s) : prev.length < 9 ? [...prev, s] : prev);
+    if (subjects.includes(s)) {
+      setSubjects(prev => prev.filter(x => x !== s));
+      return;
+    }
+    if (subjects.length >= 3) return;
+    setSubjects(prev => [...prev, s]);
   };
 
   const validateCnic = () => {
@@ -79,9 +84,13 @@ export const SignupModal: React.FC = () => {
       cnicNumber: cnicInput,
       subjects,
       gradeLevel,
-      hourlyRatePKR: hourlyRate,
+      hourlyRatePKR: monthlyRate,
       cnicVerified: true,
     });
+    // If tutor, add their profile to the tutor list
+    if (role === 'tutor' && subjects.length > 0) {
+      addUserTutor(name, subjects, city, area, monthlyRate);
+    }
   };
 
   const stepLabels = ['Account', 'CNIC Verification', 'Mobile OTP', 'Profile Details'];
@@ -280,13 +289,13 @@ export const SignupModal: React.FC = () => {
                     <label className="text-xs font-bold text-slate-700 block mb-1.5 flex items-center gap-1"><CreditCard size={12} className="text-slate-400" /> Monthly Tuition Rate (PKR)</label>
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-slate-500 font-mono">PKR</span>
-                      <input type="number" value={hourlyRate} onChange={e => setHourlyRate(parseInt(e.target.value) || 0)}
+                      <input type="number" value={monthlyRate} onChange={e => setMonthlyRate(parseInt(e.target.value) || 0)}
                         className="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                     </div>
                     <div className="flex gap-2 mt-2">
-                      {[1000, 1500, 2000, 2500, 3000].map(v => (
-                        <button key={v} onClick={() => setHourlyRate(v)}
-                          className={'flex-1 py-1.5 rounded-xl text-[10px] font-bold transition-colors ' + (hourlyRate === v ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600')}>
+                      {[10000, 15000, 20000, 25000, 30000].map(v => (
+                        <button key={v} onClick={() => setMonthlyRate(v)}
+                          className={'flex-1 py-1.5 rounded-xl text-[10px] font-bold transition-colors ' + (monthlyRate === v ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600')}>
                           {v / 1000}K
                         </button>
                       ))}

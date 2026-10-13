@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Megaphone, MapPin, Clock, CreditCard, CheckCircle, X, AlertTriangle, Users, BookOpen, Calendar } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { Booking } from '../types';
 import { SUBJECTS } from '../data/mockData';
 import { WEEKDAYS } from '../services/scheduling';
 import { Weekday, SessionDurationMinutes, SessionsPerCycle } from '../types';

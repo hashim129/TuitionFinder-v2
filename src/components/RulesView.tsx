@@ -36,7 +36,7 @@ const RULES = [
   {
     icon: <Scale size={16} />,
     title: '7. Tax & Transaction Disclosures',
-    content: '16% GST is calculated on base tuition and shown to customers as operating fee & taxes (platform revenue). Platform fee is 15% commission. All pricing is stored as an immutable snapshot at time of booking.'
+    content: '8% operating fee is calculated on base tuition and paid by parent/student. Platform fee is 15% commission. All pricing is stored as an immutable snapshot at time of booking.'
   },
   {
     icon: <CreditCard size={16} />,

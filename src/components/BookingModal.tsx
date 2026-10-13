@@ -209,11 +209,11 @@ export const BookingModal: React.FC<Props> = ({ isOpen, tutor, onClose }) => {
                 <div className="space-y-1.5 text-xs">
                   <div className="flex justify-between"><span className="text-slate-600">Base tuition</span><span className="font-bold font-mono">PKR {pricing.baseTuition.toLocaleString()}</span></div>
                   <div className="flex justify-between"><span className="text-slate-600">Platform fee (15%)</span><span className="font-mono">PKR {pricing.platformFee.toLocaleString()}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-600">Operating fee & taxes (16%)</span><span className="font-mono">PKR {pricing.operatingFeeAndTaxes.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-600">Operating fee (8%)</span><span className="font-mono">PKR {pricing.operatingFee.toLocaleString()}</span></div>
                   <div className="border-t border-emerald-200 pt-1.5 flex justify-between text-sm"><span className="font-bold text-slate-800">Parent pays total</span><span className="font-black text-emerald-700 font-mono">PKR {pricing.totalParentPays.toLocaleString()}</span></div>
                   <div className="flex justify-between text-sm"><span className="font-bold text-slate-800">Tutor net receives</span><span className="font-black text-emerald-700 font-mono">PKR {pricing.tutorNet.toLocaleString()}</span></div>
                 </div>
-                <p className="text-[10px] text-emerald-600 mt-2">16% GST shown as operating fee & taxes. Platform fee is 15% commission.</p>
+                <p className="text-[10px] text-emerald-600 mt-2">8% operating fee paid by parent. Platform fee is 15% commission.</p>
               </div>
 
               <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl p-3">

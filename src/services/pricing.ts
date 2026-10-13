@@ -5,20 +5,20 @@ import { PricingBreakdown, PricingConfig } from '../types';
  *
  * Business model:
  * - Platform commission: 15% of base tuition
- * - GST: 16% of base tuition, shown to customers as "Operating Fee & Taxes"
- * - GST is platform revenue (not split)
+ * - Operating Fee: 8% of base tuition, paid by parent/student
+ * - Operating Fee is platform revenue (not split)
  * - Tutor receives base tuition minus platform commission (85%)
- * - Parent pays base tuition plus GST
+ * - Parent pays base tuition plus operating fee
  *
  * Example (base = 20,000):
  *   Platform fee:  3,000 (15%)
- *   GST:           3,200 (16%) -> shown as "Operating Fee & Taxes"
- *   Parent pays:  23,200 (base + GST)
+ *   Operating fee: 1,600 (8%)
+ *   Parent pays:  21,600 (base + operating fee)
  *   Tutor net:    17,000 (base - commission)
  */
 export const DEFAULT_PRICING_CONFIG: PricingConfig = {
   platformCommissionRate: 0.15,
-  gstRate: 0.16,
+  operatingFeeRate: 0.08,
   currency: 'PKR',
 };
 
@@ -32,14 +32,14 @@ export function calculatePricing(
 
   const baseTuitionI = Math.round(baseTuition);
   const platformFee = Math.round(baseTuitionI * config.platformCommissionRate);
-  const operatingFeeAndTaxes = Math.round(baseTuitionI * config.gstRate);
-  const totalParentPays = baseTuitionI + operatingFeeAndTaxes;
+  const operatingFee = Math.round(baseTuitionI * config.operatingFeeRate);
+  const totalParentPays = baseTuitionI + operatingFee;
   const tutorNet = baseTuitionI - platformFee;
 
   return {
     baseTuition: baseTuitionI,
     platformFee,
-    operatingFeeAndTaxes,
+    operatingFee,
     totalParentPays,
     tutorNet,
     config: { ...config },

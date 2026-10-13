@@ -13,7 +13,7 @@ export const HomeView: React.FC = () => {
           <div><h1 className="font-bold text-lg">TuitionFinder</h1><p className="text-[10px] text-emerald-100">Escrow-only tutoring marketplace</p></div>
         </div>
         <p className="text-xs text-emerald-100 mt-3 leading-relaxed">
-          Book verified tutors by location and subject. All payments flow through platform escrow: 16% GST as operating fee & taxes, 15% platform commission. No cash. No off-platform deals.
+          Book verified tutors by location and subject. All payments flow through platform escrow: 8% operating fee, 15% platform commission. No cash. No off-platform deals.
         </p>
       </div>
 
@@ -34,7 +34,7 @@ export const HomeView: React.FC = () => {
           </div>
           <div className="flex items-start gap-2.5">
             <div className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-bold shrink-0">2</div>
-            <div><span className="text-xs font-bold text-slate-800 block">16% GST (Operating Fee & Taxes)</span><p className="text-[10px] text-slate-500">Platform revenue, shown to customer</p></div>
+            <div><span className="text-xs font-bold text-slate-800 block">8% Operating Fee</span><p className="text-[10px] text-slate-500">Paid by parent/student</p></div>
           </div>
           <div className="flex items-start gap-2.5">
             <div className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-bold shrink-0">3</div>
@@ -45,10 +45,10 @@ export const HomeView: React.FC = () => {
           <span className="text-[10px] font-bold text-slate-400 uppercase">Example: PKR 20,000 base</span>
           <div className="grid grid-cols-2 gap-2 mt-2 text-center">
             <div className="bg-emerald-50 rounded-xl p-2"><p className="text-sm font-black text-emerald-700 font-mono">PKR 17,000</p><p className="text-[9px] text-slate-500">Tutor receives</p></div>
-            <div className="bg-amber-50 rounded-xl p-2"><p className="text-sm font-black text-amber-700 font-mono">PKR 23,200</p><p className="text-[9px] text-slate-500">Parent pays</p></div>
+            <div className="bg-amber-50 rounded-xl p-2"><p className="text-sm font-black text-amber-700 font-mono">PKR 21,600</p><p className="text-[9px] text-slate-500">Parent pays</p></div>
           </div>
           <div className="flex justify-around text-[9px] text-slate-400 mt-1">
-            <span>Base - 15% commission</span><span>Base + 16% operating fee</span>
+            <span>Base - 15% commission</span><span>Base + 8% operating fee</span>
           </div>
         </div>
       </div>

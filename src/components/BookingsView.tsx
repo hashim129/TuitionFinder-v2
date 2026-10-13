@@ -167,7 +167,7 @@ export const BookingsView: React.FC = () => {
                   </div>
                   <div className="bg-slate-50 rounded-lg p-2 text-[10px]">
                     <div className="flex justify-between"><span className="text-slate-500">Base tuition</span><span className="font-mono">PKR {p.baseTuition.toLocaleString()}</span></div>
-                    <div className="flex justify-between"><span className="text-slate-500">Operating fee & taxes (16%)</span><span className="font-mono">PKR {p.operatingFeeAndTaxes.toLocaleString()}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-500">Operating fee (8%)</span><span className="font-mono">PKR {p.operatingFee.toLocaleString()}</span></div>
                     <div className="flex justify-between font-bold text-slate-800"><span>Parent pays</span><span className="font-mono text-emerald-700">PKR {p.totalParentPays.toLocaleString()}</span></div>
                     <div className="flex justify-between"><span className="text-slate-500">Tutor net</span><span className="font-mono text-emerald-700">PKR {p.tutorNet.toLocaleString()}</span></div>
                   </div>
@@ -400,12 +400,12 @@ export const BookingsView: React.FC = () => {
                     <span className="font-bold text-xs text-emerald-800 block flex items-center gap-1"><Shield size={13} /> Pricing Breakdown</span>
                     <div className="space-y-1.5 text-xs">
                       <div className="flex justify-between"><span className="text-slate-500">Base tuition</span><span className="font-mono">PKR {pricing.baseTuition.toLocaleString()}</span></div>
-                      <div className="flex justify-between"><span className="text-slate-500">Operating fee & taxes (16%)</span><span className="font-mono">PKR {pricing.operatingFeeAndTaxes.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-500">Operating fee (8%)</span><span className="font-mono">PKR {pricing.operatingFee.toLocaleString()}</span></div>
                       <div className="flex justify-between"><span className="text-slate-500">Platform fee (15%)</span><span className="font-mono">PKR {pricing.platformFee.toLocaleString()}</span></div>
                       <div className="border-t border-emerald-200 pt-1.5 flex justify-between text-sm"><span className="font-bold text-slate-800">Parent pays total</span><span className="font-black text-emerald-700 font-mono">PKR {pricing.totalParentPays.toLocaleString()}</span></div>
                       <div className="flex justify-between text-sm"><span className="font-bold text-slate-800">Tutor net receives</span><span className="font-black text-emerald-700 font-mono">PKR {pricing.tutorNet.toLocaleString()}</span></div>
                     </div>
-                    <p className="text-[10px] text-emerald-600 mt-2">Parent pays base + 16% operating fee & taxes. Tutor receives 85% of base tuition. Platform keeps 15% commission.</p>
+                    <p className="text-[10px] text-emerald-600 mt-2">Parent pays base + 8% operating fee. Tutor receives 85% of base tuition. Platform keeps 15% commission.</p>
                   </div>
 
                   <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl p-3">
