@@ -1,0 +1,266 @@
+import React, { useState } from 'react';
+import { Shield, Wallet, BookOpen, CheckCircle, ArrowRight, Settings, Bell, HelpCircle, LogOut, Fingerprint, Smartphone, Lock, Megaphone, Calendar, CreditCard, AlertTriangle, X, CheckCircle2, Ban, AlertOctagon } from 'lucide-react';
+import { useApp } from '../context/AppContext';
+import { calculatePricing } from '../services/pricing';
+import { SUBJECTS } from '../data/mockData';
+
+export const ProfileView: React.FC = () => {
+  const {
+    currentUser, sessions, setActiveTab, premium, addPremiumSubject,
+    bookings, tuitionNeeds, violations, setSignupOpen
+  } = useApp();
+
+  const [showPremium, setShowPremium] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+
+  const totalEscrow = sessions.reduce((s, sess) => s + sess.escrowBalance, 0);
+  const totalTutorPayout = sessions.reduce((s, sess) => s + sess.tutorPayout, 0);
+  const totalPlatformFee = sessions.reduce((s, sess) => s + sess.platformFee, 0);
+
+  // Masked CNIC - show only last 4 digits
+  const maskedCnic = currentUser.cnicNumber ? currentUser.cnicNumber.replace(/^(\d{3}).*(\d{4})$/, '$1****-$2') : '35202-****-**7';
+
+  return (
+    <div className="p-4 space-y-4 animate-in">
+      {/* Profile Header */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-5 text-center">
+        <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-xl font-bold mx-auto mb-2">
+          {currentUser.avatar}
+        </div>
+        <h1 className="text-lg font-bold text-slate-900">{currentUser.name}</h1>
+        <p className="text-xs text-slate-500 mt-0.5">{currentUser.phone} · {currentUser.city}</p>
+        <span className="inline-block mt-2 px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-full border border-emerald-200">
+          {currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1)} / Student
+        </span>
+
+        <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Fingerprint size={14} className="text-slate-400" />
+              <span className="text-xs text-slate-600">CNIC</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-mono font-bold text-slate-800">{maskedCnic}</span>
+              {currentUser.cnicVerified ? (
+                <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">
+                  <CheckCircle size={8} /> Verified
+                </span>
+              ) : (
+                <button onClick={() => setSignupOpen(true)} className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200">Verify</button>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Smartphone size={14} className="text-slate-400" />
+              <span className="text-xs text-slate-600">Mobile</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-bold">{currentUser.phone}</span>
+              {currentUser.otpVerified ? (
+                <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">
+                  <CheckCircle size={8} /> OTP Verified
+                </span>
+              ) : (
+                <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200">Pending</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Escrow Summary */}
+      <div className="bg-emerald-600 text-white rounded-2xl p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Shield size={16} />
+          <span className="font-bold text-sm">Platform Escrow Summary</span>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="bg-white/10 rounded-xl p-2.5 text-center">
+            <p className="text-[10px] opacity-80">Total Escrow</p>
+            <p className="font-bold text-sm font-mono">PKR {totalEscrow.toLocaleString()}</p>
+          </div>
+          <div className="bg-white/10 rounded-xl p-2.5 text-center">
+            <p className="text-[10px] opacity-80">Tutor Payout</p>
+            <p className="font-bold text-sm font-mono">PKR {totalTutorPayout.toLocaleString()}</p>
+          </div>
+          <div className="bg-white/10 rounded-xl p-2.5 text-center">
+            <p className="text-[10px] opacity-80">Platform Fee (15%)</p>
+            <p className="font-bold text-sm font-mono">PKR {totalPlatformFee.toLocaleString()}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Active Bookings */}
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+          <h2 className="font-bold text-xs text-slate-500 uppercase tracking-wider flex items-center gap-1"><Calendar size={12} /> Active Bookings</h2>
+          <span className="text-[10px] text-slate-400">{bookings.filter(b => b.state !== 'cancelled').length} active</span>
+        </div>
+        {bookings.length === 0 ? (
+          <div className="p-6 text-center">
+            <Calendar size={32} className="text-slate-300 mx-auto mb-2" />
+            <p className="text-xs text-slate-400">No bookings yet. Find a tutor and book a session.</p>
+            <button onClick={() => setActiveTab('find')} className="mt-3 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold">Find Tutor</button>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {bookings.map(b => (
+              <div key={b.id} className="p-4 hover:bg-slate-50">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <p className="font-bold text-sm text-slate-900">{b.tutorName}</p>
+                    <p className="text-[10px] text-slate-500">{b.subject} · {b.weekdays.join(', ')} · {b.durationMinutes}m</p>
+                  </div>
+                  <span className={'text-[10px] font-bold px-2 py-0.5 rounded-full ' + (
+                    b.state === 'confirmed' ? 'bg-emerald-100 text-emerald-700' :
+                    b.state === 'awaiting_tutor_confirmation' ? 'bg-amber-100 text-amber-700' :
+                    'bg-slate-100 text-slate-500'
+                  )}>{b.state.replace(/_/g, ' ')}</span>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                  <span className="text-[11px] font-bold text-emerald-700 font-mono">PKR {b.pricing.totalParentPays.toLocaleString()}</span>
+                  {b.canRebook && (
+                    <button onClick={() => setActiveTab('find')} className="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-bold">Re-book</button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Tuition Needs */}
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+          <h2 className="font-bold text-xs text-slate-500 uppercase tracking-wider flex items-center gap-1"><Megaphone size={12} /> Tuition Needs</h2>
+          <span className="text-[10px] text-slate-400">{tuitionNeeds.length} total</span>
+        </div>
+        <button onClick={() => setActiveTab('needs')} className="w-full flex items-center justify-between p-4 hover:bg-slate-50">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+              <Megaphone size={16} />
+            </div>
+            <span className="text-sm font-medium text-slate-900">Post & Manage Needs</span>
+          </div>
+          <ArrowRight size={16} className="text-slate-400" />
+        </button>
+      </div>
+
+      {/* Premium Upgrades */}
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+          <h2 className="font-bold text-xs text-slate-500 uppercase tracking-wider flex items-center gap-1"><Wallet size={12} /> Premium Upgrades</h2>
+          <span className="text-[10px] text-slate-400">{premium.active ? `EXPIRES ${premium.expiryDate}` : 'FREE PLAN'}</span>
+        </div>
+        <div className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-sm font-bold text-slate-900">{premium.active ? 'Active Premium' : 'Add Premium Subject'}</p>
+                <p className="text-[11px] text-slate-500">3 subjects free + 6 premium (9 total)</p>
+              </div>
+              <span className="text-sm font-bold text-emerald-600">PKR 2,000 / 2 mo</span>
+            </div>
+            {premium.active && (
+              <div className="mb-3 p-2 bg-emerald-50 rounded-lg border border-emerald-200">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-emerald-700">Active until: <b>{premium.expiryDate}</b></span>
+                  <span className="text-emerald-700">{premium.additionalSubjectCount} premium subjects</span>
+                </div>
+              </div>
+            )}
+            <button onClick={() => {
+              const ok = addPremiumSubject();
+              if (!ok) {
+                alert('Premium is already active.');
+              }
+            }}
+              disabled={premium.active}
+              className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white rounded-xl text-xs font-bold">
+              {premium.active ? 'Premium Active' : 'Buy Premium (PKR 2,000)'}
+            </button>
+        </div>
+      </div>
+
+      {/* Violations */}
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+          <h2 className="font-bold text-xs text-slate-500 uppercase tracking-wider flex items-center gap-1"><AlertTriangle size={12} /> Violations</h2>
+          <span className="text-[10px] text-slate-400">{violations.length} reported</span>
+        </div>
+        {violations.length === 0 ? (
+          <div className="p-6 text-center">
+            <CheckCircle size={32} className="text-slate-300 mx-auto mb-2" />
+            <p className="text-xs text-slate-400">No violations reported. Keep it clean!</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {violations.map(v => (
+              <div key={v.id} className="p-4">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-bold text-xs text-slate-900">{v.category}</span>
+                  <span className="text-[10px] font-bold text-red-600">SUBMITTED</span>
+                </div>
+                <p className="text-[11px] text-slate-600">{v.description}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Settings */}
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="p-4 border-b border-slate-100">
+          <h2 className="font-bold text-xs text-slate-500 uppercase tracking-wider">Account</h2>
+        </div>
+        <div className="divide-y divide-slate-100">
+          <button onClick={() => setActiveTab('home')} className="w-full flex items-center justify-between p-4 hover:bg-slate-50">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center"><Settings size={16} /></div>
+              <span className="text-sm font-medium text-slate-900">Account Settings</span>
+            </div>
+            <ArrowRight size={16} className="text-slate-400" />
+          </button>
+          <button className="w-full flex items-center justify-between p-4 hover:bg-slate-50">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center"><Bell size={16} /></div>
+              <span className="text-sm font-medium text-slate-900">Notifications</span>
+            </div>
+            <ArrowRight size={16} className="text-slate-400" />
+          </button>
+          <button onClick={() => setShowHelp(true)} className="w-full flex items-center justify-between p-4 hover:bg-slate-50">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center"><HelpCircle size={16} /></div>
+              <span className="text-sm font-medium text-slate-900">Help & Support</span>
+            </div>
+            <ArrowRight size={16} className="text-slate-400" />
+          </button>
+        </div>
+      </div>
+
+      {/* Payment Security */}
+      <div className="bg-slate-900 text-white rounded-2xl p-4">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center shrink-0"><Shield size={20} /></div>
+          <div>
+            <h3 className="font-bold text-sm">Payment Security Guarantee</h3>
+            <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
+              All payments are held in platform escrow. 16% GST is split 50/50 between tutor and parent.
+              15% platform commission is deducted from base tuition. Funds released after full cycle completion and QR attendance scans.
+            </p>
+            <div className="flex items-center gap-1.5 mt-2">
+              <CheckCircle size={14} className="text-emerald-400" />
+              <span className="text-[11px] text-emerald-300">JazzCash · EasyPaisa · Raast · Bank Transfer</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button className="w-full flex items-center justify-center gap-2 p-3 bg-red-50 border border-red-200 text-red-700 rounded-2xl hover:bg-red-100 transition-colors">
+        <LogOut size={16} />
+        <span className="text-sm font-medium">Sign Out</span>
+      </button>
+    </div>
+  );
+};

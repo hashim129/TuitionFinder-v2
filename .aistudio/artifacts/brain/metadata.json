@@ -1,0 +1,23 @@
+{
+  "brain": {
+    "version": "1.0",
+    "createdAt": "2026-10-12T18:00:00.000Z",
+    "lastModified": "2026-10-12T18:00:00.000Z",
+    "description": "TuitionFinder - Clean tutoring marketplace with platform escrow payments",
+    "framework": "React 19 + Vite 7 + TypeScript + TailwindCSS",
+    "files": {
+      "sourceFiles": ["index.html", "server.ts", "vite.config.ts", "tsconfig.json", "tsconfig.node.json", "package.json"],
+      "appFiles": ["src/main.tsx", "src/App.tsx", "src/types.ts", "src/index.css", "src/context/AppContext.tsx", "src/data/mockData.ts"],
+      "components": ["src/components/AndroidShell.tsx", "src/components/Navbar.tsx", "src/components/BottomTabBar.tsx", "src/components/HomeView.tsx", "src/components/FindView.tsx", "src/components/ChatView.tsx", "src/components/ProfileView.tsx", "src/components/DealModal.tsx", "src/components/SessionQRModal.tsx"]
+    },
+    "structure": {
+      "root": "C:/Users/Admin/Desktop/TuitionFinder",
+      "src": "src/",
+      "components": "src/components/",
+      "context": "src/context/",
+      "data": "src/data/"
+    },
+    "aiStudioCompatible": true,
+    "notes": "Clean minimal app. 80/20 escrow split. 4-tab navigation. Chat with price negotiation. QR session codes."
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "TuitionFinder",
+  "description": "Clean, simple tutoring marketplace for Pakistan with platform-enforced escrow payments. 80/20 split: tutors get 80%, platform takes 20% for security and verification.",
+  "framework": "React 19 + Vite 7 + TypeScript",
+  "design": "Minimal Android shell, 4-tab navigation, single-screen modals, no clutter",
+  "payments": "JazzCash / EasyPaisa / Raast — all payments held in platform escrow. No cash. No off-platform deals. 80% to tutor, 20% platform commission.",
+  "features": [
+    "Home — quick actions, active sessions, recent messages",
+    "Find — search tutors/students by subject, location, budget",
+    "Chat — DM with built-in price negotiation and deal lock",
+    "Profile — account, subscription, settings"
+  ],
+  "escrow": "All monthly tuition held in escrow. Released only after 30-day session verification. QR codes for attendance. 80/20 split.",
+  "ai_studio": true,
+  "android_shell": true
+}
